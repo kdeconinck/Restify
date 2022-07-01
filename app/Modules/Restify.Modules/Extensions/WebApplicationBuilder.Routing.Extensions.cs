@@ -25,18 +25,19 @@
 namespace Restify.Modules.Extensions;
 
 using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
 
 using Restify.Modules.Internal.Extensions;
-using Restify.Modules.Services.Abstractions;
+using Restify.Modules.Routing.Abstractions;
 
-public static class WebApplicationBuilderServicesExtensions
+public static class WebApplicationBuilderRoutingExtensions
 {
-    public static WebApplicationBuilder AddServiceModule<TServiceModule>(this WebApplicationBuilder builder)
-        where TServiceModule : class, IRestifyServiceModule
+    public static WebApplicationBuilder AddRoutingModule<TRoutingModule>(this WebApplicationBuilder builder)
+        where TRoutingModule : class, IRestifyRoutingModule
     {
         _ = builder ?? throw new ArgumentNullException(nameof(builder));
 
-        builder.CreateServiceInstance<TServiceModule>().RegisterServices(builder.Services);
+        _ = builder.Services.AddSingleton<IRestifyRoutingModule>(builder.CreateServiceInstance<TRoutingModule>());
 
         return builder;
     }

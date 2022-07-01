@@ -27,113 +27,91 @@ namespace Restify.Modules.Tests.Extensions;
 using System.Diagnostics.CodeAnalysis;
 
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 using Restify.Modules.Extensions;
-using Restify.Modules.Services.Abstractions;
+using Restify.Modules.Routing.Abstractions;
 using Restify.Modules.Tests.Internal.Extensions;
 
 using Xunit;
 
-public abstract class WebApplicationBuilderServicesExtensionsUts
+public abstract class WebApplicationBuilderRoutingExtensionsUts
 {
-    public abstract class AddServiceModule
+    public abstract class AddRoutingModule
     {
-        public sealed class ANotImplementedExceptionIsThrowedByTheModule
+        public sealed class ASingleModuleWithoutDepdendencies
         {
             [SuppressMessage("Performance", "CA1812", Justification = "API Design.")]
-            internal sealed class Module : IRestifyServiceModule
+            internal sealed class Module : IRestifyRoutingModule
             {
-                public void RegisterServices(IServiceCollection serviceCollection)
+                public void RegisterRoutes(IEndpointRouteBuilder endpointRouteBuilder)
                 {
-                    throw new NotImplementedException();
+                    // NOTE: Intentionally left blank.
                 }
             }
 
             [Fact]
-            internal void ANotImplementedExceptionIsThrowed()
+            internal void TheModuleIsRegistered()
             {
                 // ARRANGE.
                 WebApplicationBuilder builder = WebApplication.CreateBuilder();
 
                 // ACT.
-                Exception exception = Record.Exception(() => builder.AddServiceModule<Module>());
+                _ = builder.AddRoutingModule<Module>();
 
                 // ASSERT.
-                _ = Assert.IsType<NotImplementedException>(exception);
+                Assert.True(builder.HasService<IRestifyRoutingModule, Module>());
             }
         }
 
-        public sealed class ANotSupportedExceptionIsThrowedByTheModule
+        public sealed class MultipleModulesWithoutDepdendencies
         {
             [SuppressMessage("Performance", "CA1812", Justification = "API Design.")]
-            internal sealed class Module : IRestifyServiceModule
+            internal sealed class ModuleOne : IRestifyRoutingModule
             {
-                public void RegisterServices(IServiceCollection serviceCollection)
+                public void RegisterRoutes(IEndpointRouteBuilder endpointRouteBuilder)
                 {
-                    throw new NotSupportedException();
+                    // NOTE: Intentionally left blank.
+                }
+            }
+
+            [SuppressMessage("Performance", "CA1812", Justification = "API Design.")]
+            internal sealed class ModuleTwo : IRestifyRoutingModule
+            {
+                public void RegisterRoutes(IEndpointRouteBuilder endpointRouteBuilder)
+                {
+                    // NOTE: Intentionally left blank.
                 }
             }
 
             [Fact]
-            internal void ANotSupportedExceptionIsThrowed()
+            internal void TheModulesAreRegistered()
             {
                 // ARRANGE.
                 WebApplicationBuilder builder = WebApplication.CreateBuilder();
 
                 // ACT.
-                Exception exception = Record.Exception(() => builder.AddServiceModule<Module>());
+                _ = builder.AddRoutingModule<ModuleOne>();
+                _ = builder.AddRoutingModule<ModuleTwo>();
 
                 // ASSERT.
-                _ = Assert.IsType<NotSupportedException>(exception);
-            }
-        }
-
-        public sealed class AModuleWithoutDepdendencies
-        {
-            [SuppressMessage("Performance", "CA1812", Justification = "API Design.")]
-            internal sealed class Module : IRestifyServiceModule
-            {
-                public void RegisterServices(IServiceCollection serviceCollection)
-                {
-                    _ = serviceCollection.AddSingleton<IDependencyService, DependencyService>();
-                }
-            }
-
-            internal interface IDependencyService
-            {
-            }
-
-            [SuppressMessage("Performance", "CA1812", Justification = "API Design.")]
-            internal sealed class DependencyService : IDependencyService
-            {
-            }
-
-            [Fact]
-            internal void RegistersTheServices()
-            {
-                // ARRANGE.
-                WebApplicationBuilder builder = WebApplication.CreateBuilder();
-
-                // ACT.
-                _ = builder.AddServiceModule<Module>();
-
-                // ASSERT.
-                Assert.True(builder.HasService<IDependencyService>());
+                Assert.True(builder.HasService<IRestifyRoutingModule, ModuleOne>());
+                Assert.True(builder.HasService<IRestifyRoutingModule, ModuleTwo>());
             }
         }
 
         public sealed class AModuleWithAnUnresolvedDepdendency
         {
             [SuppressMessage("Performance", "CA1812", Justification = "API Design.")]
-            internal sealed class Module : IRestifyServiceModule
+            internal sealed class Module : IRestifyRoutingModule
             {
                 public Module(IDependencyService _)
                 {
                 }
 
-                public void RegisterServices(IServiceCollection serviceCollection)
+                public void RegisterRoutes(IEndpointRouteBuilder endpointRouteBuilder)
                 {
                     // NOTE: Intentionally left blank.
                 }
@@ -150,7 +128,7 @@ public abstract class WebApplicationBuilderServicesExtensionsUts
                 WebApplicationBuilder builder = WebApplication.CreateBuilder();
 
                 // ACT.
-                Exception exception = Record.Exception(() => builder.AddServiceModule<Module>());
+                Exception exception = Record.Exception(() => builder.AddRoutingModule<Module>());
 
                 // ASSERT.
                 _ = Assert.IsType<InvalidOperationException>(exception);
@@ -160,15 +138,15 @@ public abstract class WebApplicationBuilderServicesExtensionsUts
         public sealed class AModuleWithAResolvedDepdendency
         {
             [SuppressMessage("Performance", "CA1812", Justification = "API Design.")]
-            internal sealed class Module : IRestifyServiceModule
+            internal sealed class Module : IRestifyRoutingModule
             {
                 public Module(IConfiguration _)
                 {
                 }
 
-                public void RegisterServices(IServiceCollection serviceCollection)
+                public void RegisterRoutes(IEndpointRouteBuilder endpointRouteBuilder)
                 {
-                    _ = serviceCollection.AddSingleton<IDependencyService, DependencyService>();
+                    // NOTE: Intentionally left blank.
                 }
             }
 
@@ -182,16 +160,17 @@ public abstract class WebApplicationBuilderServicesExtensionsUts
             }
 
             [Fact]
-            internal void RegistersTheServices()
+            internal void TheModuleIsRegisteredAsAnIRestifyRoutingModuleInstance()
             {
                 // ARRANGE.
                 WebApplicationBuilder builder = WebApplication.CreateBuilder();
 
                 // ACT.
-                _ = builder.AddServiceModule<Module>();
+                _ = builder.AddRoutingModule<Module>();
 
                 // ASSERT.
-                Assert.True(builder.HasService<IDependencyService>());
+                ServiceProvider serviceProvider = builder.Services.BuildServiceProvider();
+                _ = Assert.IsType<Module>(serviceProvider.GetRequiredService<IRestifyRoutingModule>());
             }
         }
     }

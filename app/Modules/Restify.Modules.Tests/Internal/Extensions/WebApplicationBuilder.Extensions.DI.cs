@@ -36,4 +36,20 @@ internal static class WebApplicationBuilderDiExtensions
 
         return serviceProvider.GetService<TService>() != null;
     }
+
+    internal static bool HasService<TService, TImplementation>(this WebApplicationBuilder builder)
+        where TService : class
+    {
+        ServiceProvider serviceProvider = builder.Services.BuildServiceProvider();
+
+        return builder.ResolveServices<TService>().Any(x => x.GetType() == typeof(TImplementation));
+    }
+
+    private static IEnumerable<TService> ResolveServices<TService>(this WebApplicationBuilder builder)
+        where TService : class
+    {
+        ServiceProvider serviceProvider = builder.Services.BuildServiceProvider();
+
+        return serviceProvider.GetService<IEnumerable<TService>>() ?? Array.Empty<TService>();
+    }
 }

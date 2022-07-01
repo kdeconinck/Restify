@@ -27,9 +27,11 @@ namespace Restify.Modules.Internal.Extensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
+using Restify.Modules.Services.Abstractions;
+
 internal static class WebApplicationBuilderDiExtensions
 {
-    internal static TService CreateService<TService>(this WebApplicationBuilder builder)
+    internal static TService CreateServiceInstance<TService>(this WebApplicationBuilder builder)
         where TService : class
     {
         ServiceProvider serviceProvider = builder.Services.BuildServiceProvider();

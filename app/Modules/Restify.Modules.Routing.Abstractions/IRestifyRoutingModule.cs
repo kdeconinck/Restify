@@ -22,22 +22,11 @@
 // =                FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 // =                OTHER DEALINGS IN THE SOFTWARE.
 // =====================================================================================================================
-namespace Restify.Modules.Extensions;
+namespace Restify.Modules.Routing.Abstractions;
 
-using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Routing;
 
-using Restify.Modules.Internal.Extensions;
-using Restify.Modules.Services.Abstractions;
-
-public static class WebApplicationBuilderServicesExtensions
+public interface IRestifyRoutingModule
 {
-    public static WebApplicationBuilder AddServiceModule<TServiceModule>(this WebApplicationBuilder builder)
-        where TServiceModule : class, IRestifyServiceModule
-    {
-        _ = builder ?? throw new ArgumentNullException(nameof(builder));
-
-        builder.CreateServiceInstance<TServiceModule>().RegisterServices(builder.Services);
-
-        return builder;
-    }
+    void RegisterRoutes(IEndpointRouteBuilder endpointRouteBuilder);
 }

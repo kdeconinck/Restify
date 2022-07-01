@@ -22,22 +22,4 @@
 // =                FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 // =                OTHER DEALINGS IN THE SOFTWARE.
 // =====================================================================================================================
-namespace Restify.Modules.Extensions;
-
-using Microsoft.AspNetCore.Builder;
-
-using Restify.Modules.Internal.Extensions;
-using Restify.Modules.Services.Abstractions;
-
-public static class WebApplicationBuilderServicesExtensions
-{
-    public static WebApplicationBuilder AddServiceModule<TServiceModule>(this WebApplicationBuilder builder)
-        where TServiceModule : class, IRestifyServiceModule
-    {
-        _ = builder ?? throw new ArgumentNullException(nameof(builder));
-
-        builder.CreateServiceInstance<TServiceModule>().RegisterServices(builder.Services);
-
-        return builder;
-    }
-}
+[assembly: CLSCompliant(false)]

@@ -10,7 +10,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "100. REPOSITORY CONFIGURATI
 		..\LICENSE = ..\LICENSE
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Restify.Modules.Tests", "Modules\Restify.Modules.Tests\Restify.Modules.Tests.csproj", "{CB23ED48-8FDC-4B8F-BBD3-9DEBD554B330}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Restify.Modules.Tests", "Modules\Restify.Modules.Tests\Restify.Modules.Tests.csproj", "{CB23ED48-8FDC-4B8F-BBD3-9DEBD554B330}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "200. MODULES.", "200. MODULES.", "{F6E9091A-3233-4FAD-A464-A2A4D0921329}"
 EndProject
@@ -18,9 +18,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "100. SOURCE.", "100. SOURCE
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "200. TESTS.", "200. TESTS.", "{F3CE4FF0-2E8A-4E60-A584-FCAC690391F6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Restify.Modules", "Modules\Restify.Modules\Restify.Modules.csproj", "{F112CFA1-FC47-40E0-A21A-1DC4333B6EEC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Restify.Modules", "Modules\Restify.Modules\Restify.Modules.csproj", "{F112CFA1-FC47-40E0-A21A-1DC4333B6EEC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Restify.Modules.Services.Abstractions", "Modules\Restify.Modules.Services.Abstractions\Restify.Modules.Services.Abstractions.csproj", "{10435A04-B163-48D5-9859-8DBB7454009E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Restify.Modules.Services.Abstractions", "Modules\Restify.Modules.Services.Abstractions\Restify.Modules.Services.Abstractions.csproj", "{10435A04-B163-48D5-9859-8DBB7454009E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Restify.Modules.Routing.Abstractions", "Modules\Restify.Modules.Routing.Abstractions\Restify.Modules.Routing.Abstractions.csproj", "{29A226C0-7361-4BEF-AEC2-DE587DC07921}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -40,6 +42,10 @@ Global
 		{10435A04-B163-48D5-9859-8DBB7454009E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{10435A04-B163-48D5-9859-8DBB7454009E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{10435A04-B163-48D5-9859-8DBB7454009E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{29A226C0-7361-4BEF-AEC2-DE587DC07921}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{29A226C0-7361-4BEF-AEC2-DE587DC07921}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{29A226C0-7361-4BEF-AEC2-DE587DC07921}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{29A226C0-7361-4BEF-AEC2-DE587DC07921}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -50,6 +56,7 @@ Global
 		{F3CE4FF0-2E8A-4E60-A584-FCAC690391F6} = {F6E9091A-3233-4FAD-A464-A2A4D0921329}
 		{F112CFA1-FC47-40E0-A21A-1DC4333B6EEC} = {D83F4468-2243-4CFC-B78A-E88AF3300C59}
 		{10435A04-B163-48D5-9859-8DBB7454009E} = {D83F4468-2243-4CFC-B78A-E88AF3300C59}
+		{29A226C0-7361-4BEF-AEC2-DE587DC07921} = {D83F4468-2243-4CFC-B78A-E88AF3300C59}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {B193E223-323E-46DF-B7C2-949AB763B390}
