@@ -35,7 +35,6 @@ public static class WebApplicationBuilderServicesExtensions
         where TServiceModule : class, IRestifyServiceModule
     {
         _ = builder ?? throw new ArgumentNullException(nameof(builder));
-
         builder.CreateServiceInstance<TServiceModule>().RegisterServices(builder.Services);
 
         return builder;

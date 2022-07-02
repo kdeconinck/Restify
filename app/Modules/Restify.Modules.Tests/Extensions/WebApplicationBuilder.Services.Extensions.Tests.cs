@@ -42,15 +42,6 @@ public abstract class WebApplicationBuilderServicesExtensionsUts
     {
         public sealed class ANotImplementedExceptionIsThrowedByTheModule
         {
-            [SuppressMessage("Performance", "CA1812", Justification = "API Design.")]
-            internal sealed class Module : IRestifyServiceModule
-            {
-                public void RegisterServices(IServiceCollection serviceCollection)
-                {
-                    throw new NotImplementedException();
-                }
-            }
-
             [Fact]
             internal void ANotImplementedExceptionIsThrowed()
             {
@@ -63,19 +54,19 @@ public abstract class WebApplicationBuilderServicesExtensionsUts
                 // ASSERT.
                 _ = Assert.IsType<NotImplementedException>(exception);
             }
-        }
 
-        public sealed class ANotSupportedExceptionIsThrowedByTheModule
-        {
             [SuppressMessage("Performance", "CA1812", Justification = "API Design.")]
             internal sealed class Module : IRestifyServiceModule
             {
                 public void RegisterServices(IServiceCollection serviceCollection)
                 {
-                    throw new NotSupportedException();
+                    throw new NotImplementedException();
                 }
             }
+        }
 
+        public sealed class ANotSupportedExceptionIsThrowedByTheModule
+        {
             [Fact]
             internal void ANotSupportedExceptionIsThrowed()
             {
@@ -88,28 +79,19 @@ public abstract class WebApplicationBuilderServicesExtensionsUts
                 // ASSERT.
                 _ = Assert.IsType<NotSupportedException>(exception);
             }
-        }
 
-        public sealed class AModuleWithoutDepdendencies
-        {
             [SuppressMessage("Performance", "CA1812", Justification = "API Design.")]
             internal sealed class Module : IRestifyServiceModule
             {
                 public void RegisterServices(IServiceCollection serviceCollection)
                 {
-                    _ = serviceCollection.AddSingleton<IDependencyService, DependencyService>();
+                    throw new NotSupportedException();
                 }
             }
+        }
 
-            internal interface IDependencyService
-            {
-            }
-
-            [SuppressMessage("Performance", "CA1812", Justification = "API Design.")]
-            internal sealed class DependencyService : IDependencyService
-            {
-            }
-
+        public sealed class AModuleWithoutDepdendencies
+        {
             [Fact]
             internal void RegistersTheServices()
             {
@@ -122,27 +104,26 @@ public abstract class WebApplicationBuilderServicesExtensionsUts
                 // ASSERT.
                 Assert.True(builder.HasService<IDependencyService>());
             }
+
+            [SuppressMessage("Performance", "CA1812", Justification = "API Design.")]
+            internal sealed class Module : IRestifyServiceModule
+            {
+                public void RegisterServices(IServiceCollection serviceCollection)
+                {
+                    _ = serviceCollection.AddSingleton<IDependencyService, DependencyService>();
+                }
+            }
+
+            internal interface IDependencyService
+            { }
+
+            [SuppressMessage("Performance", "CA1812", Justification = "API Design.")]
+            internal sealed class DependencyService : IDependencyService
+            { }
         }
 
         public sealed class AModuleWithAnUnresolvedDepdendency
         {
-            [SuppressMessage("Performance", "CA1812", Justification = "API Design.")]
-            internal sealed class Module : IRestifyServiceModule
-            {
-                public Module(IDependencyService _)
-                {
-                }
-
-                public void RegisterServices(IServiceCollection serviceCollection)
-                {
-                    // NOTE: Intentionally left blank.
-                }
-
-                internal interface IDependencyService
-                {
-                }
-            }
-
             [Fact]
             internal void AnInvalidOperationExceptionIsThrowed()
             {
@@ -155,32 +136,25 @@ public abstract class WebApplicationBuilderServicesExtensionsUts
                 // ASSERT.
                 _ = Assert.IsType<InvalidOperationException>(exception);
             }
+
+            [SuppressMessage("Performance", "CA1812", Justification = "API Design.")]
+            internal sealed class Module : IRestifyServiceModule
+            {
+                public Module(IDependencyService _)
+                { }
+
+                public void RegisterServices(IServiceCollection serviceCollection)
+                {
+                    // NOTE: Intentionally left blank.
+                }
+
+                internal interface IDependencyService
+                { }
+            }
         }
 
         public sealed class AModuleWithAResolvedDepdendency
         {
-            [SuppressMessage("Performance", "CA1812", Justification = "API Design.")]
-            internal sealed class Module : IRestifyServiceModule
-            {
-                public Module(IConfiguration _)
-                {
-                }
-
-                public void RegisterServices(IServiceCollection serviceCollection)
-                {
-                    _ = serviceCollection.AddSingleton<IDependencyService, DependencyService>();
-                }
-            }
-
-            internal interface IDependencyService
-            {
-            }
-
-            [SuppressMessage("Performance", "CA1812", Justification = "API Design.")]
-            internal sealed class DependencyService : IDependencyService
-            {
-            }
-
             [Fact]
             internal void RegistersTheServices()
             {
@@ -193,6 +167,25 @@ public abstract class WebApplicationBuilderServicesExtensionsUts
                 // ASSERT.
                 Assert.True(builder.HasService<IDependencyService>());
             }
+
+            [SuppressMessage("Performance", "CA1812", Justification = "API Design.")]
+            internal sealed class Module : IRestifyServiceModule
+            {
+                public Module(IConfiguration _)
+                { }
+
+                public void RegisterServices(IServiceCollection serviceCollection)
+                {
+                    _ = serviceCollection.AddSingleton<IDependencyService, DependencyService>();
+                }
+            }
+
+            internal interface IDependencyService
+            { }
+
+            [SuppressMessage("Performance", "CA1812", Justification = "API Design.")]
+            internal sealed class DependencyService : IDependencyService
+            { }
         }
     }
 }

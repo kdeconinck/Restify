@@ -36,7 +36,6 @@ public static class WebApplicationBuilderMiddlewareExtensions
         where TMiddlewareModule : class, IRestifyMiddlewareModule
     {
         _ = builder ?? throw new ArgumentNullException(nameof(builder));
-
         _ = builder.Services.AddSingleton<IRestifyMiddlewareModule>(builder.CreateServiceInstance<TMiddlewareModule>());
 
         return builder;

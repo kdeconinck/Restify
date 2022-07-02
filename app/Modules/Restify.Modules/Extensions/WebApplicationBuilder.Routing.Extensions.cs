@@ -36,7 +36,6 @@ public static class WebApplicationBuilderRoutingExtensions
         where TRoutingModule : class, IRestifyRoutingModule
     {
         _ = builder ?? throw new ArgumentNullException(nameof(builder));
-
         _ = builder.Services.AddSingleton<IRestifyRoutingModule>(builder.CreateServiceInstance<TRoutingModule>());
 
         return builder;

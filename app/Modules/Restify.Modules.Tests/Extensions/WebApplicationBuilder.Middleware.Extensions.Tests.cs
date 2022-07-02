@@ -28,11 +28,9 @@ using System.Diagnostics.CodeAnalysis;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 
 using Restify.Modules.Extensions;
 using Restify.Modules.Middleware.Abstractions;
-using Restify.Modules.Routing.Abstractions;
 using Restify.Modules.Tests.Internal.Extensions;
 
 using Xunit;
@@ -43,15 +41,6 @@ public abstract class WebApplicationBuilderMiddlewareExtensionsUts
     {
         public sealed class ASingleModuleWithoutDepdendencies
         {
-            [SuppressMessage("Performance", "CA1812", Justification = "API Design.")]
-            internal sealed class Module : IRestifyMiddlewareModule
-            {
-                public void UseMiddleware(WebApplication app)
-                {
-                    // NOTE: Intentionally left blank.
-                }
-            }
-
             [Fact]
             internal void TheModuleIsRegistered()
             {
@@ -64,10 +53,34 @@ public abstract class WebApplicationBuilderMiddlewareExtensionsUts
                 // ASSERT.
                 Assert.True(builder.HasService<IRestifyMiddlewareModule, Module>());
             }
+
+            [SuppressMessage("Performance", "CA1812", Justification = "API Design.")]
+            internal sealed class Module : IRestifyMiddlewareModule
+            {
+                public void UseMiddleware(WebApplication app)
+                {
+                    // NOTE: Intentionally left blank.
+                }
+            }
         }
 
         public sealed class MultipleModulesWithoutDepdendencies
         {
+            [Fact]
+            internal void TheModulesAreRegistered()
+            {
+                // ARRANGE.
+                WebApplicationBuilder builder = WebApplication.CreateBuilder();
+
+                // ACT.
+                _ = builder.AddMiddlewareModule<ModuleOne>();
+                _ = builder.AddMiddlewareModule<ModuleTwo>();
+
+                // ASSERT.
+                Assert.True(builder.HasService<IRestifyMiddlewareModule, ModuleOne>());
+                Assert.True(builder.HasService<IRestifyMiddlewareModule, ModuleTwo>());
+            }
+
             [SuppressMessage("Performance", "CA1812", Justification = "API Design.")]
             internal sealed class ModuleOne : IRestifyMiddlewareModule
             {
@@ -85,42 +98,10 @@ public abstract class WebApplicationBuilderMiddlewareExtensionsUts
                     // NOTE: Intentionally left blank.
                 }
             }
-
-            [Fact]
-            internal void TheModulesAreRegistered()
-            {
-                // ARRANGE.
-                WebApplicationBuilder builder = WebApplication.CreateBuilder();
-
-                // ACT.
-                _ = builder.AddMiddlewareModule<ModuleOne>();
-                _ = builder.AddMiddlewareModule<ModuleTwo>();
-
-                // ASSERT.
-                Assert.True(builder.HasService<IRestifyMiddlewareModule, ModuleOne>());
-                Assert.True(builder.HasService<IRestifyMiddlewareModule, ModuleTwo>());
-            }
         }
 
         public sealed class AModuleWithAnUnresolvedDepdendency
         {
-            [SuppressMessage("Performance", "CA1812", Justification = "API Design.")]
-            internal sealed class Module : IRestifyMiddlewareModule
-            {
-                public Module(IDependencyService _)
-                {
-                }
-
-                public void UseMiddleware(WebApplication app)
-                {
-                    // NOTE: Intentionally left blank.
-                }
-
-                internal interface IDependencyService
-                {
-                }
-            }
-
             [Fact]
             internal void AnInvalidOperationExceptionIsThrowed()
             {
@@ -133,32 +114,25 @@ public abstract class WebApplicationBuilderMiddlewareExtensionsUts
                 // ASSERT.
                 _ = Assert.IsType<InvalidOperationException>(exception);
             }
-        }
 
-        public sealed class AModuleWithAResolvedDepdendency
-        {
             [SuppressMessage("Performance", "CA1812", Justification = "API Design.")]
             internal sealed class Module : IRestifyMiddlewareModule
             {
-                public Module(IConfiguration _)
-                {
-                }
+                public Module(IDependencyService _)
+                { }
 
                 public void UseMiddleware(WebApplication app)
                 {
                     // NOTE: Intentionally left blank.
                 }
-            }
 
-            internal interface IDependencyService
-            {
+                internal interface IDependencyService
+                { }
             }
+        }
 
-            [SuppressMessage("Performance", "CA1812", Justification = "API Design.")]
-            internal sealed class DependencyService : IDependencyService
-            {
-            }
-
+        public sealed class AModuleWithAResolvedDepdendency
+        {
             [Fact]
             internal void TheModuleIsRegisteredAsAnIRestifyRoutingModuleInstance()
             {
@@ -169,8 +143,19 @@ public abstract class WebApplicationBuilderMiddlewareExtensionsUts
                 _ = builder.AddMiddlewareModule<Module>();
 
                 // ASSERT.
-                ServiceProvider serviceProvider = builder.Services.BuildServiceProvider();
-                _ = Assert.IsType<Module>(serviceProvider.GetRequiredService<IRestifyMiddlewareModule>());
+                Assert.True(builder.HasService<IRestifyMiddlewareModule, Module>());
+            }
+
+            [SuppressMessage("Performance", "CA1812", Justification = "API Design.")]
+            internal sealed class Module : IRestifyMiddlewareModule
+            {
+                public Module(IConfiguration _)
+                { }
+
+                public void UseMiddleware(WebApplication app)
+                {
+                    // NOTE: Intentionally left blank.
+                }
             }
         }
     }

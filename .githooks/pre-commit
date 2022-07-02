@@ -1,0 +1,75 @@
+#!/bin/sh
+
+# Print the header.
+cat << "EOF"
+              ,
+     __  _.-"` `'-.
+    /||\'._ __{}_(    GIT Guard
+    ||||  |'--.__\
+    |  L.(   ^_\^     Author:  Kevin De Coninck <kevin.dconinck@gmail.com>
+    \ .-' |   _ |     Version: 1.0.0
+    | |   )\___/
+    |  \-'`:._] 
+    \__/;      '-.
+
+    [Task 1]: Run the unit tests.
+    [Task 2]: Format the code using ReSharper's CLI tools.
+    ----------------------------------------------------------------------
+
+EOF
+
+# Navigate to the `app` directory, resore the required `dotnet` CLI tools and run `dotnet jb cleanupcode`.
+cd ./app
+
+# Print information to inform the user that the required NuGet packages are being restored.
+cat << "EOF"
+    [INFO]: Running (Task 1) - Run the unit tests.
+            ... Restoring the required NuGet packages.
+EOF
+
+# Restore the required NuGet packages.
+dotnet restore Restify.sln > /dev/null 2>&1
+
+# Print information to inform the user that the .NET solution is being built.
+cat << "EOF"
+            ... Building the .NET solution.
+EOF
+
+# Build the .NET solution.
+dotnet build --no-incremental Restify.sln > /dev/null 2>&1
+
+# Print information to inform the user that the unit tests are being executed.
+cat << "EOF"
+            ... Running the unit tests.
+EOF
+
+# Run all the .NET tests.
+dotnet test --no-build --no-restore Restify.sln > /dev/null 2>&1
+
+# Print information to inform the user that the required .NET CLI tools are being restored.
+cat << "EOF"
+
+    [INFO]: Running (Task 2) - Format the code using ReSharper's CLI tools.
+            ... Restoring the required `dotnet CLI` tools.
+EOF
+
+# Restore the required .NET CLI tools.
+dotnet tool restore > /dev/null 2>&1
+
+# Print information to inform the user that JetBrains ReSharper CLI (cleanupcode) command is being executed.
+cat << "EOF"
+            ... Running JetBrains ReSharper CLI (cleanupcode) command.
+EOF
+
+# Execute the JetBrains ReSharper CLI (cleanupcode) command.
+dotnet jb cleanupcode Restify.sln > /dev/null 2>&1
+
+# Print information to inform the user that ALL checks have passed.
+cat << "EOF"
+            
+            [INFO]: All checks passed.
+            
+EOF
+
+# Terminate the script with a `0` status code.
+exit 0
