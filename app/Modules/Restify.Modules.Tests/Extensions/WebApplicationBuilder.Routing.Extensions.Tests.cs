@@ -22,18 +22,16 @@
 // =                FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 // =                OTHER DEALINGS IN THE SOFTWARE.
 // =====================================================================================================================
+
 namespace Restify.Modules.Tests.Extensions;
 
 using System.Diagnostics.CodeAnalysis;
-
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
-
 using Restify.Modules.Extensions;
 using Restify.Modules.Routing.Abstractions;
 using Restify.Modules.Tests.Internal.Extensions;
-
 using Xunit;
 
 public abstract class WebApplicationBuilderRoutingExtensionsUts
@@ -120,7 +118,8 @@ public abstract class WebApplicationBuilderRoutingExtensionsUts
             internal sealed class Module : IRestifyRoutingModule
             {
                 public Module(IDependencyService _)
-                { }
+                {
+                }
 
                 public void RegisterRoutes(IEndpointRouteBuilder endpointRouteBuilder)
                 {
@@ -128,7 +127,8 @@ public abstract class WebApplicationBuilderRoutingExtensionsUts
                 }
 
                 internal interface IDependencyService
-                { }
+                {
+                }
             }
         }
 
@@ -151,7 +151,8 @@ public abstract class WebApplicationBuilderRoutingExtensionsUts
             internal sealed class Module : IRestifyRoutingModule
             {
                 public Module(IConfiguration _)
-                { }
+                {
+                }
 
                 public void RegisterRoutes(IEndpointRouteBuilder endpointRouteBuilder)
                 {

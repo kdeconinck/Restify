@@ -253,7 +253,7 @@ csharp_initializer_braces                              = next_line
 csharp_use_continuous_indent_inside_initializer_braces = true
 csharp_other_braces                                    = next_line
 csharp_allow_comment_after_lbrace                      = false
-csharp_empty_block_style                               = together
+csharp_empty_block_style                               = multiline
 
 # Section: Configuration for 'JetBrains.ReSharper.GlobalTools' - Syntax style ('var' usage in declarations﻿).
 [*.cs]

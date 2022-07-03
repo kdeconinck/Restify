@@ -22,17 +22,15 @@
 // =                FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 // =                OTHER DEALINGS IN THE SOFTWARE.
 // =====================================================================================================================
+
 namespace Restify.Modules.Tests.Extensions;
 
 using System.Diagnostics.CodeAnalysis;
-
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
-
 using Restify.Modules.Extensions;
 using Restify.Modules.Middleware.Abstractions;
 using Restify.Modules.Tests.Internal.Extensions;
-
 using Xunit;
 
 public abstract class WebApplicationBuilderMiddlewareExtensionsUts
@@ -119,7 +117,8 @@ public abstract class WebApplicationBuilderMiddlewareExtensionsUts
             internal sealed class Module : IRestifyMiddlewareModule
             {
                 public Module(IDependencyService _)
-                { }
+                {
+                }
 
                 public void UseMiddleware(WebApplication app)
                 {
@@ -127,7 +126,8 @@ public abstract class WebApplicationBuilderMiddlewareExtensionsUts
                 }
 
                 internal interface IDependencyService
-                { }
+                {
+                }
             }
         }
 
@@ -150,7 +150,8 @@ public abstract class WebApplicationBuilderMiddlewareExtensionsUts
             internal sealed class Module : IRestifyMiddlewareModule
             {
                 public Module(IConfiguration _)
-                { }
+                {
+                }
 
                 public void UseMiddleware(WebApplication app)
                 {

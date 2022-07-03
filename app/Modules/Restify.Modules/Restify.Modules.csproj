@@ -1,21 +1,23 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-	<AnalysisMode>all</AnalysisMode>
-	<EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
-  </PropertyGroup>
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <AnalysisMode>all</AnalysisMode>
+        <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    </PropertyGroup>
 
-  <ItemGroup>
-	<FrameworkReference Include="Microsoft.AspNetCore.App" />
-  </ItemGroup>
+    <ItemGroup>
+        <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Restify.Modules.Middleware.Abstractions\Restify.Modules.Middleware.Abstractions.csproj" />
-    <ProjectReference Include="..\Restify.Modules.Routing.Abstractions\Restify.Modules.Routing.Abstractions.csproj" />
-    <ProjectReference Include="..\Restify.Modules.Services.Abstractions\Restify.Modules.Services.Abstractions.csproj" />
-  </ItemGroup>
+    <ItemGroup>
+        <ProjectReference
+            Include="..\Restify.Modules.Middleware.Abstractions\Restify.Modules.Middleware.Abstractions.csproj" />
+        <ProjectReference Include="..\Restify.Modules.Routing.Abstractions\Restify.Modules.Routing.Abstractions.csproj" />
+        <ProjectReference
+            Include="..\Restify.Modules.Services.Abstractions\Restify.Modules.Services.Abstractions.csproj" />
+    </ItemGroup>
 
 </Project>

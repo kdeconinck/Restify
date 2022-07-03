@@ -31,10 +31,10 @@ echo "    [INFO]: Running (Task 2) - Run the tests using \`dotnet test\`."
 echo "    ... Restoring the required NuGet packages."
 
 # Restore the required NuGet packages.
-DOTNET_RESTORE_OUTPUT=$(dotnet restore Restify.sln | grep "Unable to find package")
+dotnet_restore_output=$(dotnet restore Restify.sln | grep "Unable to find package")
 
 # If an error occured while restoring the required NuGet packages, inform the user and terminate the script.
-if ! [ -z "$DOTNET_RESTORE_OUTPUT" ]
+if ! [ -z "$dotnet_restore_output" ]
 then
     echo -e "        \033[0;31m[ERROR]: An error occured while restoring the required NuGet packages.\033[0m"
     echo -e "                 \033[0;31mFor more information, execute \`dotnet restore Restify.sln\` in the \`./app\` folder.\033[0m"
@@ -47,10 +47,10 @@ fi
 echo "    ... Building the .NET Solution."
 
 # Build the .NET solution.
-DOTNET_BUILD_OUTPUT=$(dotnet build --no-incremental Restify.sln | grep "Build FAILED.")
+dotnet_build_output=$(dotnet build --no-incremental Restify.sln | grep "Build FAILED.")
 
 # If an error was raised while building the .NET solution inform the user and terminate the script.
-if ! [ -z "$DOTNET_BUILD_OUTPUT" ]
+if ! [ -z "$dotnet_build_output" ]
 then
     echo -e "        \033[0;31m[ERROR]: An error was raised while building the .NET solution.\033[0m"
     echo -e "                 \033[0;31mFor more information, execute \`dotnet build --no-incremental Restify.sln\` in the \`./app\` folder.\033[0m"
@@ -61,12 +61,13 @@ then
 fi
 
 echo "    ... Running the the tests."
+echo ""
 
 # Run the tests.
-DOTNET_TEST_OUTPUT=$(dotnet test --no-build --no-restore Restify.sln 2>/dev/null | grep "Failed!")
+dotnet_test_output=$(dotnet test --no-build --no-restore Restify.sln 2>/dev/null | grep "Failed!")
 
 # If any test failed, inform the user and terminate the script.
-if ! [ -z "$DOTNET_TEST_OUTPUT" ]
+if ! [ -z "$dotnet_test_output" ]
 then
     echo -e "        \033[0;31m[ERROR]: One or more tests did fail.\033[0m"
     echo -e "                 \033[0;31mFor more information, execute \`dotnet test Restify.sln\` in the \`./app\` folder.\033[0m"
@@ -81,10 +82,10 @@ echo "    [INFO]: Running (Task 3) - Calculate the code coverage using ReSharper
 
 # Calculate the code coverage.
 dotnet dotcover test --dcReportType=Xml > /dev/null 2>&1
-TOTAL_CODE_COVERAGE_PERCENT=$(grep -Poi "(?<=CoveragePercent=\")\\d+" dotCover.Output.xml | head -1)
+total_code_coverage_percentage=$(grep -Poi "(?<=CoveragePercent=\")\\d+" dotCover.Output.xml | head -1)
 
 # If the total code coverage is lower than the specified thershold, inform the user and terminate the script.
-if [ $TOTAL_CODE_COVERAGE_PERCENT -lt 80 ]
+if [ $total_code_coverage_percentage -lt 80 ]
 then
     echo -e "        \033[0;31m[ERROR]: The code coverage percentage is lower than the threshold of \`80%\`,.\033[0m"
 
@@ -93,5 +94,29 @@ then
     exit 1
 fi
 
-# Terminate the script with a `0` status code.
-exit 1
+# Execute `Task 4` - Format the code using ReSharper's CLI tools.
+echo "    [INFO]: Running (Task 4) - Format the code using ReSharper's CLI tools."
+staged_files_egliable_for_cleanup=$(git diff --name-only --cached | grep .cs)
+
+# Concatenate ALL C# source files in a string, where each file is surrounded by double quotes.
+cleanup_command="dotnet jb cleanupcode "
+for staged_file in $staged_files_egliable_for_cleanup
+do
+  cleanup_command+="\"${staged_file:4:(${#staged_file}-4)}\" "
+done
+
+# Clean the code using ReSharper's CLI tools.
+echo "    ... Cleanup all the staged files."
+eval ${cleanup_command:0:(${#cleanup_command}-1)} > /dev/null 2>&1
+
+# For each staged file, stage them again because ReSharper's CLI tools will have modified them.
+for staged_file in $staged_files_egliable_for_cleanup
+do
+  echo "    ... Staging file \`$staged_file\`."
+    git add ${staged_file:4:(${#staged_file}-4)}
+done
+echo ""
+
+# Terminate the script with a `0` status code to notify git that this HOOK has passed.
+# This results in the continuation of the commit.
+exit 0

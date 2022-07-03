@@ -1,24 +1,18 @@
 {
-  "version": 1,
-  "isRoot": true,
-  "tools": {
-    "dotnet-coverage": {
-      "version": "17.3.6",
-      "commands": [
-        "dotnet-coverage"
-      ]
-    },
-    "dotnet-reportgenerator-globaltool": {
-      "version": "5.1.9",
-      "commands": [
-        "reportgenerator"
-      ]
-    },
-    "jetbrains.resharper.globaltools": {
-      "version": "2022.1.2",
-      "commands": [
-        "jb"
-      ]
+    "version": 1,
+    "isRoot": true,
+    "tools": {
+        "jetbrains.resharper.globaltools": {
+            "version": "2022.1.2",
+            "commands": [
+                "jb"
+            ]
+        },
+        "jetbrains.dotcover.globaltool": {
+            "version": "2022.1.2",
+            "commands": [
+                "dotnet-dotcover"
+            ]
+        }
     }
-  }
 }
