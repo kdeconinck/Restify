@@ -1,75 +1,97 @@
 #!/bin/sh
 
-# Print the header.
-cat << "EOF"
-              ,
-     __  _.-"` `'-.
-    /||\'._ __{}_(    GIT Guard
-    ||||  |'--.__\
-    |  L.(   ^_\^     Author:  Kevin De Coninck <kevin.dconinck@gmail.com>
-    \ .-' |   _ |     Version: 1.0.0
-    | |   )\___/
-    |  \-'`:._] 
-    \__/;      '-.
+# Print ASCII art, explaining the purpose of this git HOOK.
+echo "              ,"
+echo "     __  _.-\"\` \`'-."
+echo "    /||\'._ __{}_(    GIT Guard"
+echo "    ||||  |'--.__\\"
+echo "    |  L.(   ^_\\^     Author:  Kevin De Coninck <kevin.dconinck@gmail.com>"
+echo "    \ .-' |   _ |     Version: 1.0.0"
+echo "    | |   )\\___/"
+echo "    |  \-'\`:._]"
+echo "    \\__/;      '-."
+echo ""
+echo "    [Task 1]: Restore the dotnet tools which are included with this repository."
+echo "    [Task 2]: Run the tests using \`dotnet test\`."
+echo "    [Task 3]: Calculate the code coverage using ReSharper's DotCover CLI tool."
+echo "    [Task 4]: Format the code using ReSharper's CLI tools."
+echo "    [Task 5]: Analyze the code using ReSharper's CLI tools."
+echo ""
 
-    [Task 1]: Run the unit tests.
-    [Task 2]: Format the code using ReSharper's CLI tools.
-    ----------------------------------------------------------------------
-
-EOF
-
-# Navigate to the `app` directory, resore the required `dotnet` CLI tools and run `dotnet jb cleanupcode`.
+# Navigate to the `app` directory as this is the directory holding the relevant information and restore the dotnet tools
+# which are included with this repository.
 cd ./app
 
-# Print information to inform the user that the required NuGet packages are being restored.
-cat << "EOF"
-    [INFO]: Running (Task 1) - Run the unit tests.
-            ... Restoring the required NuGet packages.
-EOF
-
-# Restore the required NuGet packages.
-dotnet restore Restify.sln > /dev/null 2>&1
-
-# Print information to inform the user that the .NET solution is being built.
-cat << "EOF"
-            ... Building the .NET solution.
-EOF
-
-# Build the .NET solution.
-dotnet build --no-incremental Restify.sln > /dev/null 2>&1
-
-# Print information to inform the user that the unit tests are being executed.
-cat << "EOF"
-            ... Running the unit tests.
-EOF
-
-# Run all the .NET tests.
-dotnet test --no-build --no-restore Restify.sln > /dev/null 2>&1
-
-# Print information to inform the user that the required .NET CLI tools are being restored.
-cat << "EOF"
-
-    [INFO]: Running (Task 2) - Format the code using ReSharper's CLI tools.
-            ... Restoring the required `dotnet CLI` tools.
-EOF
-
-# Restore the required .NET CLI tools.
+# Execute `Task 1` - Restore the dotnet tools which are included with this repository.
+echo "    [INFO]: Running (Task 1) - Restore the dotnet tools which are included with this repository."
 dotnet tool restore > /dev/null 2>&1
 
-# Print information to inform the user that JetBrains ReSharper CLI (cleanupcode) command is being executed.
-cat << "EOF"
-            ... Running JetBrains ReSharper CLI (cleanupcode) command.
-EOF
+# Execute `Task 2` - Run the tests using `dotnet test`.
+echo "    [INFO]: Running (Task 2) - Run the tests using \`dotnet test\`."
+echo "    ... Restoring the required NuGet packages."
 
-# Execute the JetBrains ReSharper CLI (cleanupcode) command.
-dotnet jb cleanupcode Restify.sln > /dev/null 2>&1
+# Restore the required NuGet packages.
+DOTNET_RESTORE_OUTPUT=$(dotnet restore Restify.sln | grep "Unable to find package")
 
-# Print information to inform the user that ALL checks have passed.
-cat << "EOF"
-            
-    [INFO]: All checks passed.
-            
-EOF
+# If an error occured while restoring the required NuGet packages, inform the user and terminate the script.
+if ! [ -z "$DOTNET_RESTORE_OUTPUT" ]
+then
+    echo -e "        \033[0;31m[ERROR]: An error occured while restoring the required NuGet packages.\033[0m"
+    echo -e "                 \033[0;31mFor more information, execute \`dotnet restore Restify.sln\` in the \`./app\` folder.\033[0m"
+
+    # Terminate the script (with an exit code different from `0`) to notify git that this git HOOK has failed.
+    # This results in the abort of the commit.
+    exit 1
+fi
+
+echo "    ... Building the .NET Solution."
+
+# Build the .NET solution.
+DOTNET_BUILD_OUTPUT=$(dotnet build --no-incremental Restify.sln | grep "Build FAILED.")
+
+# If an error was raised while building the .NET solution inform the user and terminate the script.
+if ! [ -z "$DOTNET_BUILD_OUTPUT" ]
+then
+    echo -e "        \033[0;31m[ERROR]: An error was raised while building the .NET solution.\033[0m"
+    echo -e "                 \033[0;31mFor more information, execute \`dotnet build --no-incremental Restify.sln\` in the \`./app\` folder.\033[0m"
+
+    # Terminate the script (with an exit code different from `0`) to notify git that this git HOOK has failed.
+    # This results in the abort of the commit.
+    exit 1
+fi
+
+echo "    ... Running the the tests."
+
+# Run the tests.
+DOTNET_TEST_OUTPUT=$(dotnet test --no-build --no-restore Restify.sln 2>/dev/null | grep "Failed!")
+
+# If any test failed, inform the user and terminate the script.
+if ! [ -z "$DOTNET_TEST_OUTPUT" ]
+then
+    echo -e "        \033[0;31m[ERROR]: One or more tests did fail.\033[0m"
+    echo -e "                 \033[0;31mFor more information, execute \`dotnet test Restify.sln\` in the \`./app\` folder.\033[0m"
+
+    # Terminate the script (with an exit code different from `0`) to notify git that this git HOOK has failed.
+    # This results in the abort of the commit.
+    exit 1
+fi
+
+# Execute `Task 3` - Calculate the code coverage using ReSharper's DotCover CLI tool.
+echo "    [INFO]: Running (Task 3) - Calculate the code coverage using ReSharper's DotCover CLI tool."
+
+# Calculate the code coverage.
+dotnet dotcover test --dcReportType=Xml > /dev/null 2>&1
+TOTAL_CODE_COVERAGE_PERCENT=$(grep -Poi "(?<=CoveragePercent=\")\\d+" dotCover.Output.xml | head -1)
+
+# If the total code coverage is lower than the specified thershold, inform the user and terminate the script.
+if [ $TOTAL_CODE_COVERAGE_PERCENT -lt 80 ]
+then
+    echo -e "        \033[0;31m[ERROR]: The code coverage percentage is lower than the threshold of \`80%\`,.\033[0m"
+
+    # Terminate the script (with an exit code different from `0`) to notify git that this git HOOK has failed.
+    # This results in the abort of the commit.
+    exit 1
+fi
 
 # Terminate the script with a `0` status code.
-exit 0
+exit 1
