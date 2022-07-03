@@ -22,16 +22,18 @@
 // =                FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 // =                OTHER DEALINGS IN THE SOFTWARE.
 // =====================================================================================================================
-
 namespace Restify.Modules.Tests.Extensions;
 
 using System.Diagnostics.CodeAnalysis;
+
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
+
 using Restify.Modules.Extensions;
 using Restify.Modules.Routing.Abstractions;
 using Restify.Modules.Tests.Internal.Extensions;
+
 using Xunit;
 
 public abstract class WebApplicationBuilderRoutingExtensionsUts

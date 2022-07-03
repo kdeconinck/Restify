@@ -30,5 +30,7 @@
 /app/**/bin/
 /app/**/obj/
 
+# Code inspection output.
+jbInspect.output.xml
 # Code coverage output.
 /app/dotCover.output.xml

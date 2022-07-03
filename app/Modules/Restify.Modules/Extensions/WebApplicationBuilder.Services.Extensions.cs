@@ -22,10 +22,10 @@
 // =                FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 // =                OTHER DEALINGS IN THE SOFTWARE.
 // =====================================================================================================================
-
 namespace Restify.Modules.Extensions;
 
 using Microsoft.AspNetCore.Builder;
+
 using Restify.Modules.Internal.Extensions;
 using Restify.Modules.Services.Abstractions;
 

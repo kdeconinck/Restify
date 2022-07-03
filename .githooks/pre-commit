@@ -1,5 +1,14 @@
 #!/bin/sh
 
+# Constants, required by the script.
+dotnet_tools_folder="./app"
+dotnet_tools_folder_name_len=4
+dotnet_solution_name="Restify.sln"
+code_coverage_threshold=80
+
+# Variables, required by the script.
+staged_source_files=$(git diff --name-only --cached | grep .cs$)
+
 # Print ASCII art, explaining the purpose of this git HOOK.
 echo "              ,"
 echo "     __  _.-\"\` \`'-."
@@ -12,111 +21,169 @@ echo "    |  \-'\`:._]"
 echo "    \\__/;      '-."
 echo ""
 echo "    [Task 1]: Restore the dotnet tools which are included with this repository."
-echo "    [Task 2]: Run the tests using \`dotnet test\`."
-echo "    [Task 3]: Calculate the code coverage using ReSharper's DotCover CLI tool."
-echo "    [Task 4]: Format the code using ReSharper's CLI tools."
-echo "    [Task 5]: Analyze the code using ReSharper's CLI tools."
+echo "    [Task 2]: Build the .NET solution."
+echo "    [Task 3]: Cleanup the code using the JetBrains ReSharper's CLI tool."
+echo "    [Task 4]: Check the build for warnings."
+echo "    [Task 5]: Analyze the code using the JetBrains ReSharper's CLI tool."
+echo "    [Task 6]: Calculate the code coverage using the JetBrains DotCover CLI tool."
 echo ""
 
-# Navigate to the `app` directory as this is the directory holding the relevant information and restore the dotnet tools
-# which are included with this repository.
-cd ./app
+# Navigate to the folder containing the `.config` folder which holds information about the .NET tools which are included
+# with this repository.
+cd $dotnet_tools_folder
 
-# Execute `Task 1` - Restore the dotnet tools which are included with this repository.
-echo "    [INFO]: Running (Task 1) - Restore the dotnet tools which are included with this repository."
-dotnet tool restore > /dev/null 2>&1
+# SYNOPSIS: Install / Restore the .NET tools which are included with this repository.
+function restore_dotnet_tools {
+    echo "    [INFO]: Running (Task 1) - Restore the dotnet tools which are included with this repository."
+    dotnet tool restore > /dev/null 2>&1
+}
 
-# Execute `Task 2` - Run the tests using `dotnet test`.
-echo "    [INFO]: Running (Task 2) - Run the tests using \`dotnet test\`."
-echo "    ... Restoring the required NuGet packages."
+# SYNOPSIS: Restore the NuGet packages.
+#           If a NuGet package couldn't be restored, exit the script.
+function restore_packages {
+    echo "    ... Restoring the required NuGet packages."
 
-# Restore the required NuGet packages.
-dotnet_restore_output=$(dotnet restore Restify.sln | grep "Unable to find package")
+    dotnet_restore_output=$(dotnet restore $dotnet_solution_name | grep "Unable to find package")
 
-# If an error occured while restoring the required NuGet packages, inform the user and terminate the script.
-if ! [ -z "$dotnet_restore_output" ]
-then
-    echo -e "        \033[0;31m[ERROR]: An error occured while restoring the required NuGet packages.\033[0m"
-    echo -e "                 \033[0;31mFor more information, execute \`dotnet restore Restify.sln\` in the \`./app\` folder.\033[0m"
+    # If an error occured while restoring the required NuGet packages, inform the user and terminate the script.
+    if ! [ -z "$dotnet_restore_output" ]
+    then
+        echo -e "        \033[0;31m[ERROR]: An error occured while restoring the required NuGet packages.\033[0m"
+        echo -e "                 \033[0;31mFor more information, execute \`dotnet restore $dotnet_solution_name\` in the \`./app\` folder.\033[0m"
 
-    # Terminate the script (with an exit code different from `0`) to notify git that this git HOOK has failed.
-    # This results in the abort of the commit.
-    exit 1
-fi
+        # Terminate the script (with an exit code different from `0`) to notify git that this git HOOK has failed.
+        # This results in the abort of the commit.
+        exit 1
+    fi
+}
 
-echo "    ... Building the .NET Solution."
+# SYNOPSIS: Build the .NET solution.
+function build_solution {
+    echo "    ... Building the .NET Solution."
 
-# Build the .NET solution.
-dotnet_build_output=$(dotnet build --no-incremental Restify.sln | grep "Build FAILED.")
+    # Build the .NET solution.
+    dotnet_build_output=$(dotnet build --no-incremental $dotnet_solution_name | grep "Build FAILED.")
 
-# If an error was raised while building the .NET solution inform the user and terminate the script.
-if ! [ -z "$dotnet_build_output" ]
-then
-    echo -e "        \033[0;31m[ERROR]: An error was raised while building the .NET solution.\033[0m"
-    echo -e "                 \033[0;31mFor more information, execute \`dotnet build --no-incremental Restify.sln\` in the \`./app\` folder.\033[0m"
+    # If an error was raised while building the .NET solution inform the user and terminate the script.
+    if ! [ -z "$dotnet_build_output" ]
+    then
+        echo -e "        \033[0;31m[ERROR]: An error was raised while building the .NET solution.\033[0m"
+        echo -e "                 \033[0;31mFor more information, execute \`dotnet build --no-incremental $dotnet_solution_name\` in the \`./app\` folder.\033[0m"
 
-    # Terminate the script (with an exit code different from `0`) to notify git that this git HOOK has failed.
-    # This results in the abort of the commit.
-    exit 1
-fi
+        # Terminate the script (with an exit code different from `0`) to notify git that this git HOOK has failed.
+        # This results in the abort of the commit.
+        exit 1
+    fi
+}
 
-echo "    ... Running the the tests."
+# SYNOPSIS: Build the .NET solution.
+function build_all {
+    echo "    [INFO]: Running (Task 2) - Build the .NET solution."
+
+    restore_packages
+    build_solution
+
+    echo ""
+}
+
+# SYNOPSIS: Format the files which are staged.
+function cleanup_staged {
+    echo "    [INFO]: Running (Task 3) - Cleanup the code using the JetBrains ReSharper's CLI tool."
+
+    if ! [ -z "$staged_source_files" ]
+    then
+
+        # Build the command to cleanup the files which are staged.
+        command="dotnet jb cleanupcode "
+        for file in $staged_source_files
+        do
+        command+="\"${file:4:(${#file}-4)}\" "
+        done
+
+        # Clean the code using ReSharper's CLI tools.
+        echo "    ... Cleanup all the staged files."
+        eval ${command:0:(${#command})} > /dev/null 2>&1
+
+        # Re-stage all the files.
+        for file in $staged_source_files
+        do
+        echo "    ... Staging file \`$file\`."
+            git add ${file:4:(${#file}-4)}
+        done
+
+        echo ""
+    fi
+}
+
+# SYNOPSIS: Build the solution and check for any warnings.
+function check_build_warnings {
+    echo "    [INFO]: Running (Task 4) - Check the build for warnings."
+
+    # Build the .NET solution.
+    dotnet_build_output=$(dotnet build --no-incremental $dotnet_solution_name | grep ": warning ")
+
+    # If a warning was raised while building the .NET solution inform the user and terminate the script.
+    if ! [ -z "$dotnet_build_output" ]
+    then
+        echo -e "        \033[0;31m[ERROR]: A warning was raised while building the .NET solution.\033[0m"
+        echo -e "                 \033[0;31mFor more information, execute \`dotnet build --no-incremental $dotnet_solution_name\` in the \`./app\` folder.\033[0m"
+
+        # Terminate the script (with an exit code different from `0`) to notify git that this git HOOK has failed.
+        # This results in the abort of the commit.
+        exit 1
+    fi
+}
+
+# SYNOPSIS: Analyze the code of the C# source files which are staged, by using the JetBrains ReSharper's CLI tool.
+function analyze_all {
+    echo "    [INFO]: Running (Task 5) - Analyze the code using the JetBrains ReSharper's CLI tool."
+
+    eval "dotnet jb inspectcode $dotnet_solution_name --build --output=\"jbInspect.output.xml\" --format=\"xml\"" > /dev/null 2>&1
+
+    inspectcode_output=$(grep "<IssueType " jbInspect.output.xml)
+
+    # If anything was reported by the JetBrains ReSharper's CLI tool
+    if ! [ -z "$inspectcode_output" ]
+    then
+        echo -e "        \033[0;31m[ERROR]: Issues reported by the JetBrains ReSharper's CLI tools.\033[0m"
+        echo -e "                 \033[0;31mFor more information, execute \`dotnet jb inspectcode $dotnet_solution_name --build --output=\"jbInspect.output.xml\" --format=\"xml\"\` folder.\033[0m"
+
+        # Terminate the script (with an exit code different from `0`) to notify git that this git HOOK has failed.
+        # This results in the abort of the commit.
+        exit 1
+    fi
+}
+
+# SYNOPSIS: Calculate the code coverage by using the JetBrains DotCover CLI tool.
+function calculate_code_coverage {
+    echo "    [INFO]: Running (Task 6) - Calculate the code coverage using JetBrains DotCover CLI tool."
+
+    dotnet dotcover test --no-build --no-restore --dcReportType=Xml > /dev/null 2>&1
+    total_percentage=$(grep -Poi "(?<=CoveragePercent=\")\\d+" dotCover.Output.xml | head -1)
+
+    # If the total code coverage is lower than the specified thershold, inform the user and terminate the script.
+    if [ $total_percentage -lt $code_coverage_threshold ]
+    then
+        echo -e "        \033[0;31m[ERROR]: The code coverage percentage is lower than the threshold of \`$code_coverage_threshold%\`.\033[0m"
+
+        # Terminate the script (with an exit code different from `0`) to notify git that this git HOOK has failed.
+        # This results in the abort of the commit.
+        exit 1
+    fi
+}
+
+exit 0
+
+# Execute the git HOOK.
+restore_dotnet_tools
+build_all
+cleanup_staged
+check_build_warnings
+analyze_all
+calculate_code_coverage
+
+# The script has executed without errors, so print an empty line to seperate the git HOOK script from git's native
+# output.
 echo ""
 
-# Run the tests.
-dotnet_test_output=$(dotnet test --no-build --no-restore Restify.sln 2>/dev/null | grep "Failed!")
-
-# If any test failed, inform the user and terminate the script.
-if ! [ -z "$dotnet_test_output" ]
-then
-    echo -e "        \033[0;31m[ERROR]: One or more tests did fail.\033[0m"
-    echo -e "                 \033[0;31mFor more information, execute \`dotnet test Restify.sln\` in the \`./app\` folder.\033[0m"
-
-    # Terminate the script (with an exit code different from `0`) to notify git that this git HOOK has failed.
-    # This results in the abort of the commit.
-    exit 1
-fi
-
-# Execute `Task 3` - Calculate the code coverage using ReSharper's DotCover CLI tool.
-echo "    [INFO]: Running (Task 3) - Calculate the code coverage using ReSharper's DotCover CLI tool."
-
-# Calculate the code coverage.
-dotnet dotcover test --dcReportType=Xml > /dev/null 2>&1
-total_code_coverage_percentage=$(grep -Poi "(?<=CoveragePercent=\")\\d+" dotCover.Output.xml | head -1)
-
-# If the total code coverage is lower than the specified thershold, inform the user and terminate the script.
-if [ $total_code_coverage_percentage -lt 80 ]
-then
-    echo -e "        \033[0;31m[ERROR]: The code coverage percentage is lower than the threshold of \`80%\`,.\033[0m"
-
-    # Terminate the script (with an exit code different from `0`) to notify git that this git HOOK has failed.
-    # This results in the abort of the commit.
-    exit 1
-fi
-
-# Execute `Task 4` - Format the code using ReSharper's CLI tools.
-echo "    [INFO]: Running (Task 4) - Format the code using ReSharper's CLI tools."
-staged_files_egliable_for_cleanup=$(git diff --name-only --cached | grep .cs)
-
-# Concatenate ALL C# source files in a string, where each file is surrounded by double quotes.
-cleanup_command="dotnet jb cleanupcode "
-for staged_file in $staged_files_egliable_for_cleanup
-do
-  cleanup_command+="\"${staged_file:4:(${#staged_file}-4)}\" "
-done
-
-# Clean the code using ReSharper's CLI tools.
-echo "    ... Cleanup all the staged files."
-eval ${cleanup_command:0:(${#cleanup_command}-1)} > /dev/null 2>&1
-
-# For each staged file, stage them again because ReSharper's CLI tools will have modified them.
-for staged_file in $staged_files_egliable_for_cleanup
-do
-  echo "    ... Staging file \`$staged_file\`."
-    git add ${staged_file:4:(${#staged_file}-4)}
-done
-echo ""
-
-# Terminate the script with a `0` status code to notify git that this HOOK has passed.
-# This results in the continuation of the commit.
 exit 0
