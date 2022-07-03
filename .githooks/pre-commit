@@ -67,7 +67,7 @@ dotnet jb cleanupcode Restify.sln > /dev/null 2>&1
 # Print information to inform the user that ALL checks have passed.
 cat << "EOF"
             
-            [INFO]: All checks passed.
+    [INFO]: All checks passed.
             
 EOF
 
